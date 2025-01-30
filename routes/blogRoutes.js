@@ -5,8 +5,8 @@ const Blog = require('../models/Blogs');
 // Create a new blogs
 router.post('/', async (req, res) => {
   try {
-    const { title, content, keywords, seoSuggestions } = req.body;
-    const blog = new Blog({ title, content, keywords, seoSuggestions });
+    const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories } = req.body;
+    const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories });
     await blog.save();
     res.json(blog);
 } catch (error) {
