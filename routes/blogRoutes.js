@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blogs');
+const mongoose = require('mongoose'); // Import Mongoose
 
 // Create a new blogs
 router.post('/', async (req, res) => {
   try {
-    const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories } = req.body;
-    const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories });
+    const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status } = req.body;
+    const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status });
     await blog.save();
     res.json(blog);
 } catch (error) {
-    console.error('Error saving blog:', error);
+    console.error('Error saving blog:', error.message);
     res.status(500).json({ error: 'Failed to save blog' });
 }
   });
@@ -26,15 +27,29 @@ router.get('/', async (req, res) => {
     }
   });
 
-//   / Read a single movie by ID
+//   / Read a single blog by ID
 router.get('/:id', async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id);
+    const blogId = req.params.id;
+
+    // Validate the blog ID format
+    if (!mongoose.Types.ObjectId.isValid(blogId)) {
+      return res.status(400).json({ error: 'Invalid Blog ID format' });
+    }
+
+    // Fetch the blog
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    // Respond with the blog
     res.json(blog);
-} catch (error) {
+  } catch (error) {
     console.error('Error fetching blog:', error);
     res.status(500).json({ error: 'Failed to fetch blog' });
-}
+  }
 });
 
 // Update a movie by ID

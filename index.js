@@ -11,9 +11,7 @@ dotenv.config();
 
 
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:3000',  // You can specify the exact frontend URL
-}));
+app.use(cors());
 app.use(express.json()); 
 app.use(bodyParser.json());
 
