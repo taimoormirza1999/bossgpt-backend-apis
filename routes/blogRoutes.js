@@ -19,13 +19,34 @@ router.post('/', async (req, res) => {
 
 // Read all blogs
 router.get('/', async (req, res) => {
-    try {
-      const blogs = await Blog.find();
-      res.status(200).send(blogs);
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
-  });
+  try {
+    // Get the limit from query parameters, default to 10 if not provided
+    const limit = parseInt(req.query.limit) || 10;
+
+   
+    // Fetch blogs with the filter and limit
+    const blogs = await Blog.find().limit(limit);
+
+    res.status(200).send(blogs);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+router.get('/recent-blogs', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const blogs = await Blog.find({ status: "published" }, {
+      title: 1,
+      coverImage: 1,
+      postedBy: 1,
+      postedDate: 1,
+      _id: 1
+    }).limit(limit);
+    res.status(200).send(blogs);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
 
 //   / Read a single blog by ID
 router.get('/:id', async (req, res) => {
