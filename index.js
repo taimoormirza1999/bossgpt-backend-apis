@@ -11,39 +11,52 @@ dotenv.config();
 
 
 const app = express();
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(cors());
 app.use(express.json()); 
 app.use(bodyParser.json());
 
 app.use('/movies', movieRoutes);
 app.use('/blogs', blogRoutes);
-app.post('/generate-seo', async (req, res) => {
-    try {
-      const { title, content } = req.body;
-      const apiKey = process.env.PERPLEXITY_API_KEY;
-  
-      const response = await axios.post(
-        'https://api.perplexity.ai/v1/complete',
-        {
-          text: `Generate SEO suggestions for the following blog post: 
-                 **Title:** ${title}
-                 **Content:** ${content}
-                 **Focus Keywords:** (List your target keywords here)`,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
+app.post('/generate-seoblogwith-images', async (req, res) => {
+  try {
+    const { title, content, focusKeywords } = req.body;
+    const apiKey = process.env.PERPLEXITY_API_KEY;
+
+    const response = await axios.post(
+      'https://api.perplexity.ai/chat/completions',
+      {
+        "model": "sonar-pro",
+        "messages": [
+          {
+            "role": "system",
+            "content": `You are an AI assistant that generates complete blog posts in HTML format. When given a title, create a full blog post including proper HTML structure, meta tags, meta description, meta title, and relevant content with placeholder images 3 to 4 and tags. Do not include CSS. Ensure the content is informative, engaging, and relevant to the title.`
           },
+          {
+            "role": "user",
+            "content": `Generate a complete blog post in HTML format for the title: ${title}`
+          }
+        ]
+      }
+      ,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
-      );
-  
-      const seoSuggestions = response.data.text;
-      res.json({ seoSuggestions });
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Failed to generate SEO suggestions' });
-    }
-  });
+      }
+    );
+
+    const seoSuggestions = response.data.choices[0].message.content;
+    res.json({ seoSuggestions });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Failed to generate SEO suggestions' });
+  }
+});
+
 // Generate content or SEO suggestions with OpenAI
 app.post('/generate-seo-chatgpt', async (req, res) => {
     try {
