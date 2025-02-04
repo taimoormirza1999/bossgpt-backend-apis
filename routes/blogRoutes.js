@@ -40,6 +40,7 @@ router.get('/', async (req, res) => {
       coverImage: 1,
       postedBy: 1,
       postedDate: 1,
+      categories: 1,
       _id: 1
     }).limit(limit);
 
