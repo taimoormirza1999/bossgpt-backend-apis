@@ -1,7 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blogs');
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
+
+// Client
+router.get('/', async (req, res) => {
+  try {
+    // Get the limit from query parameters, default to 10 if not provided
+    const limit = parseInt(req.query.limit) || 10;
+    // Fetch blogs with the filter and limit
+    const blogs = await Blog.find({ status: "published" }, {
+      title: 1,
+      coverImage: 1,
+      postedBy: 1,
+      postedDate: 1,
+      categories: 1,
+      _id: 1
+    }).limit(limit);
+
+    res.status(200).send(blogs);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 // Create a new blogs
 router.post('/', async (req, res) => {
   try {
@@ -15,7 +37,7 @@ router.post('/', async (req, res) => {
 }
   });
 
-  router.post('/admin', async (req, res) => {
+  router.post('/', async (req, res) => {
     try {
       const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status } = req.body;
       const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status });
@@ -28,12 +50,11 @@ router.post('/', async (req, res) => {
     });
 
 // Read all blogs
-router.get('/', async (req, res) => {
+
+router.get('/admin', async (req, res) => {
   try {
     // Get the limit from query parameters, default to 10 if not provided
     const limit = parseInt(req.query.limit) || 10;
-
-   
     // Fetch blogs with the filter and limit
     const blogs = await Blog.find({ status: "published" }, {
       title: 1,
@@ -41,6 +62,9 @@ router.get('/', async (req, res) => {
       postedBy: 1,
       postedDate: 1,
       categories: 1,
+      metaTitle: 1,
+      metaDescription: 1,
+      status: "published",
       _id: 1
     }).limit(limit);
 
