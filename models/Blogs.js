@@ -14,10 +14,11 @@ const blogSchema = new mongoose.Schema({
   metaTitle: { type: String, required: true },
   metaDescription: { type: String, required: true },
   metaTags: [{ type: String }],
-  status: { type: String , default: 'published'},
+  status: { type: String , default: 'pending'},
   coverImage: { type: String },
   postedBy: { type: String, required: true },
   postedDate: { type: Date, default: Date.now },
+  friendlyUrl: { type: String, required: true },
   categories: [{ type: String }],
   comments: [commentSchema], 
 }, { collection: 'blogs2' });

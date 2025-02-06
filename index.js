@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const axios = require('axios');
 const mongoose = require('mongoose');
-const movieRoutes = require('./routes/movieRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 
 dotenv.config(); 
@@ -17,45 +16,44 @@ app.use(cors());
 app.use(express.json()); 
 app.use(bodyParser.json());
 
-app.use('/movies', movieRoutes);
 app.use('/blogs', blogRoutes);
-app.post('/generate-seoblogwith-images', async (req, res) => {
-  try {
-    const { title, content, focusKeywords } = req.body;
-    const apiKey = process.env.PERPLEXITY_API_KEY;
+// app.post('/generate-seoblogwith-images', async (req, res) => {
+//   try {
+//     const { title, content, focusKeywords } = req.body;
+//     const apiKey = process.env.PERPLEXITY_API_KEY;
 
-    const response = await axios.post(
-      'https://api.perplexity.ai/chat/completions',
-      {
-        "model": "sonar-pro",
-        "messages": [
-          {
-            "role": "system",
-            "content": `You are an AI assistant that generates complete blog posts in HTML format. When given a title, create a full blog post including proper HTML structure, meta tags, meta description, meta title, and relevant content with placeholder images 3 to 4 and tags. Do not include CSS. Ensure the content is informative, engaging, and relevant to the title.`
-          },
-          {
-            "role": "user",
-            "content": `Generate a complete blog post in HTML format for the title: ${title}`
-          }
-        ]
-      }
-      ,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      }
-    );
+//     const response = await axios.post(
+//       'https://api.perplexity.ai/chat/completions',
+//       {
+//         "model": "sonar-pro",
+//         "messages": [
+//           {
+//             "role": "system",
+//             "content": `You are an AI assistant that generates complete blog posts in HTML format. When given a title, create a full blog post including proper HTML structure, meta tags, meta description, meta title, and relevant content with placeholder images 3 to 4 and tags. Do not include CSS. Ensure the content is informative, engaging, and relevant to the title.`
+//           },
+//           {
+//             "role": "user",
+//             "content": `Generate a complete blog post in HTML format for the title: ${title}`
+//           }
+//         ]
+//       }
+//       ,
+//       {
+//         headers: {
+//           'Authorization': `Bearer ${apiKey}`,
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json'
+//         }
+//       }
+//     );
 
-    const seoSuggestions = response.data.choices[0].message.content;
-    res.json({ seoSuggestions });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Failed to generate SEO suggestions' });
-  }
-});
+//     const seoSuggestions = response.data.choices[0].message.content;
+//     res.json({ seoSuggestions });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     res.status(500).json({ error: 'Failed to generate SEO suggestions' });
+//   }
+// });
 
 // Generate content or SEO suggestions with OpenAI
 app.post('/generate-seo-chatgpt', async (req, res) => {
@@ -92,7 +90,115 @@ app.post('/generate-seo-chatgpt', async (req, res) => {
       res.status(500).json({ error: 'Failed to generate AI response' });
     }
   });
-
+  app.post('/generate-seoblogwith-images', async (req, res) => {
+    try {
+      const { title, content, focusKeywords } = req.body;
+      const apiKey = process.env.PERPLEXITY_API_KEY;
+  
+      // Generate blog content
+      const blogResponse = await axios.post(
+        'https://api.perplexity.ai/chat/completions',
+        {
+          "model": "sonar-pro",
+          "messages": [
+            {
+              "role": "system",
+              "content": `You are an AI assistant that generates complete blog posts in HTML format. When given a title, create a full blog post including proper HTML structure, meta tags, meta description, meta title, and relevant content with placeholder images 3 to 4 and tags. Do not include CSS. Ensure the content is informative, engaging, and relevant to the title. 150 chracters max`
+            },
+            {
+              "role": "user",
+              "content": `Generate a complete blog post in HTML format for the title: ${title}`
+            }
+          ]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+  
+      const blogContent = blogResponse.data.choices[0].message.content;
+  
+      // Generate images
+      const imagePrompts = [
+        `Professional image representing ${title}`,
+        `Illustrative visual for ${title}`,
+        `Conceptual image related to ${title}`
+      ];
+  
+      const imageUrls = [];
+  
+      for (const prompt of imagePrompts) {
+        const imageResponse = await axios.post(
+          'https://api.perplexity.ai/chat/completions',
+          {
+            "model": "sonar-reasoning",
+            "messages": [
+              {
+                "role": "system", 
+                "content": "Generate a descriptive image URL for the given prompt"
+              },
+              {
+                "role": "user", 
+                "content": prompt
+              }
+            ]
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          }
+        );
+  
+        const imageUrl = imageResponse.data.choices[0].message.content;
+        imageUrls.push(imageUrl);
+      }
+  
+      // Insert images into blog content
+      const fullBlogPost = insertImagesIntoBlogContent(blogContent, imageUrls);
+  
+      res.json({ 
+        blogPost: fullBlogPost,
+        images: imageUrls 
+      });
+  
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate blog post with images',
+        details: error.message 
+      });
+    }
+  });
+  function insertImagesIntoBlogContent(content, imageUrls) {
+    let modifiedContent = content;
+    
+    imageUrls.forEach((url, index) => {
+      const imgTag = `
+        <img 
+          src="${url}" 
+          alt="Image ${index + 1} for blog post" 
+          width="800" 
+          height="600" 
+          class="responsive-image"
+        >
+      `;
+      
+      // Replace placeholder or insert at appropriate location
+      modifiedContent = modifiedContent.replace(
+        `<!-- Insert Perplexity-generated image here -->`, 
+        imgTag
+      );
+    });
+    
+    return modifiedContent;
+  }
   // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))

@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
 // Create a new blogs
 router.post('/', async (req, res) => {
   try {
-    const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status } = req.body;
-    const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status });
+    const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status,friendlyUrl } = req.body;
+    const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status,friendlyUrl });
     await blog.save();
     res.json(blog);
 } catch (error) {
@@ -53,9 +53,7 @@ router.post('/', async (req, res) => {
 
 router.get('/admin', async (req, res) => {
   try {
-    // Get the limit from query parameters, default to 10 if not provided
     const limit = parseInt(req.query.limit) || 10;
-    // Fetch blogs with the filter and limit
     const blogs = await Blog.find({ status: "published" }, {
       title: 1,
       coverImage: 1,
@@ -90,6 +88,25 @@ router.get('/recent-blogs', async (req, res) => {
 });
 
 //   / Read a single blog by ID
+router.get('/title/:title', async (req, res) => {
+  try {
+    const blogTitle = req.params.title;
+
+    // Find the blog by title (case-insensitive)
+    const blog = await Blog.findOne({ title: { $regex: new RegExp(blogTitle, 'i') } });
+
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    // Respond with the blog
+    res.json(blog);
+  } catch (error) {
+    console.error('Error fetching blog:', error);
+    res.status(500).json({ error: 'Failed to fetch blog' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const blogId = req.params.id;
