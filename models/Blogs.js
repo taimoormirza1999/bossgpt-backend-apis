@@ -14,7 +14,7 @@ const blogSchema = new mongoose.Schema({
   metaTitle: { type: String, required: true },
   metaDescription: { type: String, required: true },
   metaTags: [{ type: String }],
-  status: { type: String , default: 'pending'},
+  status: { type: String , default: 'published'},
   coverImage: { type: String },
   postedBy: { type: String, required: true },
   postedDate: { type: Date, default: Date.now },

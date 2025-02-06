@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
 router.get('/admin', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const blogs = await Blog.find({ status: "published" }, {
+    const blogs = await Blog.find({  }, {
       title: 1,
       coverImage: 1,
       postedBy: 1,
@@ -62,7 +62,7 @@ router.get('/admin', async (req, res) => {
       categories: 1,
       metaTitle: 1,
       metaDescription: 1,
-      status: "published",
+      status: 1,
       _id: 1
     }).limit(limit);
 
