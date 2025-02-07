@@ -6,9 +6,7 @@ const mongoose = require('mongoose');
 // Client
 router.get('/', async (req, res) => {
   try {
-    // Get the limit from query parameters, default to 10 if not provided
     const limit = parseInt(req.query.limit) || 10;
-    // Fetch blogs with the filter and limit
     const blogs = await Blog.find({ status: "published" }, {
       title: 1,
       coverImage: 1,
@@ -37,17 +35,6 @@ router.post('/', async (req, res) => {
 }
   });
 
-  router.post('/', async (req, res) => {
-    try {
-      const { title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status } = req.body;
-      const blog = new Blog({ title, content, metaTitle, metaDescription, metaTags,coverImage,postedBy,postedDate,categories,status });
-      await blog.save();
-      res.json(blog);
-  } catch (error) {
-      console.error('Error saving blog:', error.message);
-      res.status(500).json({ error: 'Failed to save blog' });
-  }
-    });
 
 // Read all blogs
 
@@ -91,15 +78,11 @@ router.get('/recent-blogs', async (req, res) => {
 router.get('/title/:title', async (req, res) => {
   try {
     const blogTitle = req.params.title;
-
-    // Find the blog by title (case-insensitive)
     const blog = await Blog.findOne({ title: { $regex: new RegExp(blogTitle, 'i') } });
 
     if (!blog) {
       return res.status(404).json({ error: 'Blog not found' });
     }
-
-    // Respond with the blog
     res.json(blog);
   } catch (error) {
     console.error('Error fetching blog:', error);
