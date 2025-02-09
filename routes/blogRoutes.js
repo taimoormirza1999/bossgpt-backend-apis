@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
       postedBy: 1,
       postedDate: 1,
       categories: 1,
+      friendlyUrl: 1,
       _id: 1
     }).limit(limit);
 
@@ -66,6 +67,7 @@ router.get('/recent-blogs', async (req, res) => {
       coverImage: 1,
       postedBy: 1,
       postedDate: 1,
+      friendlyUrl: 1,
       _id: 1
     }).limit(limit);
     res.status(200).send(blogs);
@@ -75,10 +77,10 @@ router.get('/recent-blogs', async (req, res) => {
 });
 
 //   / Read a single blog by ID
-router.get('/title/:title', async (req, res) => {
+router.get('/post/:friendlyUrl', async (req, res) => {
   try {
-    const blogTitle = req.params.title;
-    const blog = await Blog.findOne({ title: { $regex: new RegExp(blogTitle, 'i') } });
+    const friendlyUrl = req.params.friendlyUrl;
+    const blog = await Blog.findOne({ friendlyUrl: { $regex: new RegExp(friendlyUrl, 'i') } });
 
     if (!blog) {
       return res.status(404).json({ error: 'Blog not found' });
@@ -114,7 +116,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update a movie by ID
+// Update a blog by ID
 router.patch('/:id', async (req, res) => {
   try {
     const { title, content, keywords, seoSuggestions } = req.body;
@@ -130,7 +132,7 @@ router.patch('/:id', async (req, res) => {
 }
 });
 
-// Delete a movie by ID
+// Delete a blog by ID
 router.delete('/:id', async (req, res) => {
   try {
     await Blog.findByIdAndDelete(req.params.id);
