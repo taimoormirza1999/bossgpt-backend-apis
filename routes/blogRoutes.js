@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
       categories: 1,
       friendlyUrl: 1,
       _id: 1
-    }).limit(limit);
+    }).sort({ postedDate: -1 }).limit(limit);
 
     res.status(200).send(blogs);
   } catch (error) {
@@ -52,7 +52,7 @@ router.get('/admin', async (req, res) => {
       metaDescription: 1,
       status: 1,
       _id: 1
-    }).limit(limit);
+    }).sort({ postedDate: -1 }).limit(limit);
 
     res.status(200).send(blogs);
   } catch (error) {
@@ -69,7 +69,7 @@ router.get('/recent-blogs', async (req, res) => {
       postedDate: 1,
       friendlyUrl: 1,
       _id: 1
-    }).limit(limit);
+    }).sort({ postedDate: -1 }).limit(limit);
     res.status(200).send(blogs);
   } catch (error) {
     res.status(500).send(error.message);
