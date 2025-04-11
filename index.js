@@ -18,43 +18,6 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 app.use('/blogs', blogRoutes);
-// app.post('/generate-seoblogwith-images', async (req, res) => {
-//   try {
-//     const { title, content, focusKeywords } = req.body;
-//     const apiKey = process.env.PERPLEXITY_API_KEY;
-
-//     const response = await axios.post(
-//       'https://api.perplexity.ai/chat/completions',
-//       {
-//         "model": "sonar-pro",
-//         "messages": [
-//           {
-//             "role": "system",
-//             "content": `You are an AI assistant that generates complete blog posts in HTML format. When given a title, create a full blog post including proper HTML structure, meta tags, meta description, meta title, and relevant content with placeholder images 3 to 4 and tags. Do not include CSS. Ensure the content is informative, engaging, and relevant to the title.`
-//           },
-//           {
-//             "role": "user",
-//             "content": `Generate a complete blog post in HTML format for the title: ${title}`
-//           }
-//         ]
-//       }
-//       ,
-//       {
-//         headers: {
-//           'Authorization': `Bearer ${apiKey}`,
-//           'Content-Type': 'application/json',
-//           'Accept': 'application/json'
-//         }
-//       }
-//     );
-
-//     const seoSuggestions = response.data.choices[0].message.content;
-//     res.json({ seoSuggestions });
-//   } catch (error) {
-//     console.error('Error:', error);
-//     res.status(500).json({ error: 'Failed to generate SEO suggestions' });
-//   }
-// });
 
 // Generate content or SEO suggestions with OpenAI
 app.post('/generate-seo-chatgpt', async (req, res) => {
@@ -235,7 +198,7 @@ User.find()
   
 // Example Route
 app.get('/', (req, res) => {
-  res.send('Welcome to MSA Admin Blog Dashboard APIs !');
+  res.send('Welcome to Boss GPT Admin Blog Dashboard APIs !');
 });
 // Start the server
 const PORT = process.env.PORT || 3000;
